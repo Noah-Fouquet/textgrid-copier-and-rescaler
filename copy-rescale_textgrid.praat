@@ -11,7 +11,7 @@
 # not accurate and must be manually corrected. Its sole purpose is
 # to provide a head start for later, precise manual alignment.
 #
-# Version: [1.0] - 17/01/2026
+# Version: [1.1] - 20/01/2026
 #
 # Pablo Arantes <noe.fouquet90@gmail.com>
 #
@@ -33,6 +33,7 @@ form Copy & rescale TextGrid to new files#
     text textgrid_folder ./textgrid/
     text reference_textgrid ./ref.TextGrid
 endform
+
 
 # remove leading dot from extension if present
 if left$(sound_extension$, 1) = "."
@@ -76,6 +77,21 @@ for t from 1 to nTiers
     appendInfoLine: "Tier ", t, " = ", name$
 endfor
 
+Create Strings as file list... list_tg 'textgrid_folder$'*
+n_tg = Get number of strings
+
+# Loop of deletion of existing TG files if some exist in the TG folder
+if n_tg >= 1
+  beginPause: "Your TextGrid folder contains files, running the script would delete the files. Do you want to proceed?"
+  clicked = endPause: "Yes", "No", 1
+  if clicked = 1
+    appendInfoLine: "Deleting the ", n_tg, " files in '", textgrid_folder$, "'"
+    filedelete 'outTGPath$'
+  elsif clicked = 2
+    exitScript: "The ",n_tg," files in '", textgrid_folder$, "' were not deleted."
+  endif
+endif
+
 # ================================================================
 # MAIN LOOP
 # ================================================================
@@ -89,12 +105,6 @@ for i from 1 to n_files
 
     baseName$ = replace$(file_name$, "." + sound_extension$, "", 0)
     outTGPath$ = textgrid_folder$ + baseName$ + ".TextGrid"
-
-    # Loop of deletion of existing TG files if some exist in the TG folder
-    if fileReadable(outTGPath$)
-        appendInfoLine: "Deleting existing TG file: ", outTGPath$
-        filedelete 'outTGPath$'
-    endif
 
     Read from file... 'sound_folder$''file_name$'
     snd$ = selected$("Sound")
